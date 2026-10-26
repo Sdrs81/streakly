@@ -1,0 +1,12 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[php]": {
+    "editor.defaultFormatter": "open-southeners.laravel-pint"
+  },
+  "eslint.workingDirectories": ["frontend"],
+  "intelephense.environment.phpVersion": "8.3.0",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
+}
