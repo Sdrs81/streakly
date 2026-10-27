@@ -13,6 +13,13 @@ cd frontend && npm run test:unit -- --run    # frontend tests (single run)
 cd frontend && npm run lint                  # lint
 ```
 
+## Dev Environment
+Required on PATH for Claude Code tooling to work:
+- Python 3.10+ (python.org install, not the Microsoft Store alias). The `security-guidance` plugin's hooks need it and fail silently without it.
+- `jq` and `bash` (Git Bash on Windows). `.claude/hooks/guard-bash.sh` blocks every shell command if `jq` is missing; `format.sh` skips formatting.
+- PHP 8.4 (the `laravel-boost` MCP server runs `php backend/artisan boost:mcp`) and Node `^22.18 || >=24.12`.
+- Run `composer install` in `backend/` and `npm install` in `frontend/` first: `format.sh` uses `vendor/bin/pint` and Prettier, and `laravel/boost` is a Composer dependency.
+
 ## Architecture
 Never use Inertia. The backend is a JSON API only; keep all routes in `routes/api.php`.
 Always authenticate with Sanctum Bearer tokens — never cookie- or session-based SPA auth.

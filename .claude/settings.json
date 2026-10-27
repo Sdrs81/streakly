@@ -1,5 +1,13 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(php artisan test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:unit:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
     "deny": [
       "Bash(git clean:*)",
       "Read(./**/.env)",
@@ -8,14 +16,6 @@
     ],
     "ask": [
       "Bash(git push:*)"
-    ],
-    "allow": [
-      "Bash(php artisan test:*)",
-      "Bash(npm run lint:*)",
-      "Bash(npm run test:unit:*)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)"
     ]
   },
   "hooks": {
@@ -41,5 +41,8 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "security-guidance@claude-plugins-official": true
   }
 }
