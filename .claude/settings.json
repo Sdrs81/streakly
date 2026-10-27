@@ -12,7 +12,12 @@
       "Bash(git clean:*)",
       "Read(./**/.env)",
       "Edit(./**/.env)",
-      "Write(./**/.env)"
+      "Write(./**/.env)",
+      "Read(./**/.env.*)",
+      "Edit(./**/.env.*)",
+      "Write(./**/.env.*)",
+      "Read(./**/*.pem)",
+      "Read(./**/*credentials*)"
     ],
     "ask": [
       "Bash(git push:*)"

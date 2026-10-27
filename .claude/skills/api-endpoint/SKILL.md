@@ -1,6 +1,8 @@
 ---
 name: api-endpoint
 description: Adds a new REST endpoint to the Streakly Laravel backend (route, FormRequest, Policy, controller, API Resource, Pest test). Use when asked to "add an endpoint", "create an API route", "add a POST/GET/PUT/DELETE /api/... endpoint", or "expose X through the API".
+effort: medium
+allowed-tools: Read, Write, Edit, Grep, Glob, Agent, Bash(php artisan make:*), Bash(php artisan route:list:*)
 ---
 
 # Adding a new API endpoint
