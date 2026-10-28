@@ -4,6 +4,7 @@
 # Reads the tool call JSON from stdin and formats the touched file:
 #   backend/**/*.php                          -> Laravel Pint
 #   frontend/**/*.{vue,ts,js,css,json}        -> Prettier
+#   **/*.md (whole project)                   -> Prettier, frontend config
 # Formatting problems never block Claude; output is discarded.
 
 # Without jq we cannot read the file path. Exit 1 is a non-blocking error
@@ -30,6 +31,8 @@ case "$file" in
     (cd "$CLAUDE_PROJECT_DIR/backend" && vendor/bin/pint "$file" >/dev/null 2>&1) ;;
   */frontend/*.vue|*/frontend/*.ts|*/frontend/*.js|*/frontend/*.css|*/frontend/*.json)
     (cd "$CLAUDE_PROJECT_DIR/frontend" && npx prettier --write "$file" >/dev/null 2>&1) ;;
+  *.md)
+    (cd "$CLAUDE_PROJECT_DIR/frontend" && npx prettier --config .prettierrc.json --write "$file" >/dev/null 2>&1) ;;
 esac
 
 exit 0

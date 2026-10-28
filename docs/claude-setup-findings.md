@@ -43,7 +43,9 @@ In this project, `clean-code.md` covers `backend/app/**`, `backend/tests/**`, `f
 
 `CLAUDE.md` and rules ask Claude to behave. Hooks make the harness enforce it. In one observed case (reported by the user, not a logged test), a blocked `Bash` call was followed by an attempt to do the same operation in PowerShell. The guard hook in [settings.json](../.claude/settings.json) matches `Bash|PowerShell`, and the matching logic lives in [guard-bash.sh](../.claude/hooks/guard-bash.sh).
 
-**Lesson:** treat the hook as the control and the prose in `CLAUDE.md` as the explanation. Block the effect, not a single tool.
+A second case: [format.sh](../.claude/hooks/format.sh) only matched PHP and the frontend extensions, so Markdown that Claude wrote stayed unformatted until Ctrl+S. It now runs Prettier on every `.md` file too.
+
+**Lesson:** treat the hook as the control and the prose in `CLAUDE.md` as the explanation. Block the effect, not a single tool, and check a hook's patterns against every file type and tool the project actually uses.
 
 ## 4. Optimization suggestions do not end
 
