@@ -1,6 +1,6 @@
 # Claude setup: findings and lessons
 
-Date: 2026-10-28
+Date: 2026-10-28 (snapshot: token counts and file contents change over time)
 
 Observations collected while configuring Claude Code for this project. Related: [audit.md](audit.md) (scores and decisions from the formal audit).
 
@@ -8,14 +8,14 @@ Observations collected while configuring Claude Code for this project. Related: 
 
 | #   | Finding                                                         | Takeaway                                                    |
 | --- | --------------------------------------------------------------- | ----------------------------------------------------------- |
-| 1   | `/doctor` wants the "Tech Stack" block removed from `CLAUDE.md` | Technically right, practically irrelevant. Kept it.         |
+| 1   | `/doctor` wants the "Tech Stack" block removed from `CLAUDE.md` | Declined. The token saving is too small to matter.          |
 | 2   | Rules files behave like specialized `CLAUDE.md` files           | Use them for scoped guidance. They are still only advice.   |
 | 3   | Hooks are the only real enforcement                             | The model routes around a blocked tool. Guard every path.   |
 | 4   | Optimization suggestions never run out                          | Set a stopping rule before asking, or the audit never ends. |
 
 ## 1. `/doctor` suggests removing the Tech Stack block
 
-`/doctor` flagged the "Tech Stack" section of `CLAUDE.md` as removable (about 60 tokens).
+`/doctor` flagged the "Tech Stack" section of `CLAUDE.md` as removable (about 60 tokens, figure from [audit.md](audit.md)).
 
 **Why it is right:** the stack can be derived from `composer.json` and `package.json`, so the block spends resident context on information Claude can find itself.
 
@@ -29,7 +29,7 @@ Observations collected while configuring Claude Code for this project. Related: 
 
 A file in `.claude/rules/` is instruction text loaded into context, just like `CLAUDE.md`. The difference is scope: with a `paths:` list in the frontmatter, it loads only when matching files are involved.
 
-In this project, `clean-code.md` covers `backend/app/**`, `backend/tests/**` and `frontend/src/**`, so its roughly 1.1K tokens are not paid in unrelated work.
+In this project, `clean-code.md` covers `backend/app/**`, `backend/tests/**`, `frontend/src/**`, `frontend/**/*.spec.ts` and `frontend/**/*.test.ts`, so its roughly 1.1K tokens are not paid in unrelated work.
 
 **Practical split**
 
@@ -41,7 +41,7 @@ In this project, `clean-code.md` covers `backend/app/**`, `backend/tests/**` and
 
 ## 3. Hooks are the part that matters most
 
-`CLAUDE.md` and rules ask Claude to behave. Hooks make the harness enforce it. The difference showed up quickly: when one tool was blocked, the model found another route to the same result. Blocking `Bash` led it to try PowerShell for the same operation.
+`CLAUDE.md` and rules ask Claude to behave. Hooks make the harness enforce it. In one observed case (reported by the user, not a logged test), a blocked `Bash` call was followed by an attempt to do the same operation in PowerShell. The guard hook in [settings.json](../.claude/settings.json) matches `Bash|PowerShell`, and the matching logic lives in [guard-bash.sh](../.claude/hooks/guard-bash.sh).
 
 **Lesson:** treat the hook as the control and the prose in `CLAUDE.md` as the explanation. Block the effect, not a single tool.
 
@@ -49,7 +49,7 @@ In this project, `clean-code.md` covers `backend/app/**`, `backend/tests/**` and
 
 Every time Claude is asked how the setup could be improved, it produces more suggestions: another skill, another MCP server, another hook, a global setting, a sandbox config. A second round after the first fixes found new items, and so would a third.
 
-**Why:** the question has no built-in stopping point, and each answer is plausible on its own. Scores also reward adding things (see the 71 to 80 jump in `audit.md`), which pushes toward more configuration, not better configuration.
+**Why:** the question has no built-in stopping point, and each answer is plausible on its own. A score that counts present features can also push toward adding configuration. This is an inference, not something the audit measured: `audit.md` records the before and after scores but does not show what caused the change.
 
 **What worked**
 
