@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\EmailNormalizer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
@@ -12,6 +13,15 @@ class RegisterRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $email = $this->input('email');
+
+        if (is_string($email)) {
+            $this->merge(['email' => EmailNormalizer::normalize($email)]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -20,7 +30,7 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', 'max:255', 'confirmed', Password::defaults()],
         ];
     }
 }

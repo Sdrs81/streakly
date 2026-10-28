@@ -40,3 +40,17 @@ it('rejects an unconfirmed password', function () {
         ->assertUnprocessable()
         ->assertJsonValidationErrors('password');
 });
+
+it('rejects an email that only differs by casing', function () {
+    User::factory()->create(['email' => 'ada@example.com']);
+
+    $this->postJson('/api/register', validRegistrationPayload(['email' => 'Ada@Example.com']))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('email');
+});
+
+it('stores the email in lowercase', function () {
+    $this->postJson('/api/register', validRegistrationPayload(['email' => 'Ada@Example.com']))->assertCreated();
+
+    $this->assertDatabaseHas('users', ['email' => 'ada@example.com']);
+});

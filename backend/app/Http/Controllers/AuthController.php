@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -23,10 +24,15 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
+        $credentials = $request->validated();
         $provider = Auth::getProvider();
-        $user = $provider->retrieveByCredentials($request->validated());
+        $user = $provider->retrieveByCredentials($credentials);
 
-        if (! $user || ! $provider->validateCredentials($user, $request->validated())) {
+        $hasValidCredentials = $user
+            ? $provider->validateCredentials($user, $credentials)
+            : $this->spendHashingTime($credentials['password']);
+
+        if (! $hasValidCredentials) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
@@ -45,6 +51,14 @@ class AuthController extends Controller
     public function show(Request $request): UserResource
     {
         return new UserResource($request->user());
+    }
+
+    // Without this, unknown emails answer faster than wrong passwords and reveal which accounts exist.
+    private function spendHashingTime(string $password): bool
+    {
+        Hash::make($password);
+
+        return false;
     }
 
     private function authenticated(User $user): JsonResponse

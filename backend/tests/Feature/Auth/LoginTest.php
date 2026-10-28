@@ -63,3 +63,32 @@ it('throttles password spraying across different emails from one IP', function (
     $this->postJson('/api/login', ['email' => 'victim31@example.com', 'password' => 'wrong-password'])
         ->assertTooManyRequests();
 });
+
+it('rejects a non-string email with a validation error', function () {
+    $this->postJson('/api/login', ['email' => ['nobody@example.com'], 'password' => 'correct-horse-battery'])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('email');
+});
+
+it('logs in regardless of email casing', function () {
+    $user = User::factory()->create(['email' => 'ada@example.com', 'password' => 'correct-horse-battery']);
+
+    $this->postJson('/api/login', ['email' => ' Ada@Example.com ', 'password' => 'correct-horse-battery'])
+        ->assertOk()
+        ->assertJsonPath('data.id', $user->id);
+});
+
+it('counts padded emails towards the same throttle bucket', function () {
+    foreach (range(1, 10) as $attempt) {
+        $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'wrong-password'])->assertUnprocessable();
+    }
+
+    $this->postJson('/api/login', ['email' => ' Nobody@Example.com ', 'password' => 'wrong-password'])
+        ->assertTooManyRequests();
+});
+
+it('rejects an oversized password', function () {
+    $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => str_repeat('a', 256)])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+});
