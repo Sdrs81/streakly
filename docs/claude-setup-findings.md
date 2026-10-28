@@ -12,6 +12,7 @@ Observations collected while configuring Claude Code for this project. Related: 
 | 2   | Rules files behave like specialized `CLAUDE.md` files           | Use them for scoped guidance. They are still only advice.   |
 | 3   | Hooks are the only real enforcement                             | The model routes around a blocked tool. Guard every path.   |
 | 4   | Optimization suggestions never run out                          | Set a stopping rule before asking, or the audit never ends. |
+| 5   | A review gate must review what it gates                         | Test the gate on its first real run. Cap the loop.          |
 
 ## 1. `/doctor` suggests removing the Tech Stack block
 
@@ -60,3 +61,17 @@ Every time Claude is asked how the setup could be improved, it produces more sug
 - Remember that configuration has a cost: more resident context, more surfaces to break, more things to maintain.
 
 **Lesson:** decide up front what "good enough" means, then stop. Treat an optimization suggestion as an input to a decision, not as a to-do item.
+
+## 5. A review gate must review what it gates
+
+Written as Situation, Task, Action, Result.
+
+**Situation:** in Phase 1 of [plan.md](plan.md) the `review-pr` skill ran only after a PR existed, and the user had to remind Claude to run it before pushing. The rule was in the plan, not in `CLAUDE.md`.
+
+**Task:** make the review run automatically before every commit and push, add `/code-review` after it, and loop on serious findings.
+
+**Action:** wrote the rule in `CLAUDE.md` and `docs/plan.md`, then ran the new loop on its own change. It exposed that `review-pr` diffed only `main...HEAD`. Before the first commit that diff is empty, so the gate would have reported "ready to merge" on unreviewed work. Later rounds found two more gaps: new files are invisible to `git diff HEAD`, and `git status --short` collapses a new directory into one line. Fixed in the skill with `git diff HEAD` and `git status --short -uall`. Pinned `/code-review` to `high` because it reuses the last level typed, and capped the loop at 3 rounds.
+
+**Result** (observed in the session, not logged): the gate now sees uncommitted and new files, though the last `-uall` fix was not re-verified by another round. The loop did not converge on its own: it reached the cap, stopped to ask the user, and was committed on the user's approval with the remaining findings accepted as minor. Neither reviewer labels severity, so Claude classifies "critical or important" by judgment. Adding Pint and type-check to the allow list was denied as a self-modification of permissions, so those commands may still prompt until the user adds them to `.claude/settings.json`.
+
+**Lesson:** run a new gate on its own first change, because that is when it fails silently. Define the stopping rule (a round cap) before the loop, and expect a recall-tuned reviewer to keep producing findings.

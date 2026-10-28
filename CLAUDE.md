@@ -1,10 +1,12 @@
-# Streakly - Habit-tracking app. 
+# Streakly - Habit-tracking app.
 
 ## Tech Stack
+
 PHP 8.4 · Laravel 13 · Sanctum · SQLite · Pest
 Vue 3 · TypeScript 6 · Vite 8 · Pinia 4 · Vue Router 5 · Tailwind CSS 4 · Axios · Vitest
 
 ## Commands
+
 ```
 cd backend && php artisan serve              # API on port 8000
 cd frontend && npm run dev                   # SPA on port 5173, /api proxied to 8000
@@ -14,23 +16,29 @@ cd frontend && npm run lint                  # lint
 ```
 
 ## Dev Environment
+
 Required on PATH for Claude Code tooling to work:
+
 - Python 3.10+ (python.org install, not the Microsoft Store alias). The `security-guidance` plugin's hooks need it and fail silently without it.
 - `jq` and `bash` (Git Bash on Windows). `.claude/hooks/guard-bash.sh` blocks every shell command if `jq` is missing; `format.sh` skips formatting.
 - PHP 8.4 (the `laravel-boost` MCP server runs `php backend/artisan boost:mcp`) and Node `^22.18 || >=24.12`.
 - Run `composer install` in `backend/` and `npm install` in `frontend/` first: `format.sh` uses `vendor/bin/pint` and Prettier, and `laravel/boost` is a Composer dependency.
 
 ## Architecture
+
 Never use Inertia. The backend is a JSON API only; keep all routes in `routes/api.php`.
 Always authenticate with Sanctum Bearer tokens — never cookie- or session-based SPA auth.
 
 ## Conventions
+
 Always authorize with Policies — never write manual user checks inside controllers.
 Always validate with FormRequest classes and shape output with API Resources.
 Always keep frontend state in Pinia.
 Always send HTTP through the single Axios instance in `src/lib/api.ts`.
 
 ## Working Rules
+
 Always use the `api-endpoint` skill when adding a new backend endpoint.
 Always run tests through the `test-runner` subagent.
+Before every commit and push, automatically run `review-pr` (on the working-tree diff if changes are uncommitted), then `/code-review high` (never `max`/`ultra` unless asked). Critical or important means a bug, a security issue, or a broken convention above; anything else is minor and doesn't block. For each such finding, fix it, re-run the checks (tests via `test-runner`, plus Pint, lint, type-check), and run both reviews again. If still not clean after 3 rounds, stop and ask the user before committing. On push, skip the loop if nothing changed since the last clean pass.
 Never commit or push to `main`. The plan lives in `docs/plan.md`.
