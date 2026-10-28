@@ -14,6 +14,7 @@ Streakly is a small habit tracker. It is a learning project for Claude Code work
 
 - **"Today"** is computed in a fixed timezone, `Europe/Istanbul`, set as a dedicated key `config('streakly.timezone')`. `app.timezone` stays `UTC`, so timestamps (`created_at`, token expiry) are still stored in UTC. Only the habit calendar uses the local day. The README notes that the app supports a single timezone. Tests pin time with `travelTo()`.
 - **Another user's habit → 403** (from `HabitPolicy`), not 404. This is a deliberate choice: it reveals that a habit ID exists, which is acceptable for this app. The README documents it.
+- **Tokens and emails:** Sanctum tokens expire after 30 days (`SANCTUM_TOKEN_EXPIRATION_MINUTES`) and are pruned daily, 24 hours after expiry. Emails are trimmed and lowercased by `EmailNormalizer`, because SQLite compares them case-sensitively.
 - **Git:** one branch and one PR per phase, branched from an up-to-date `main`. Never commit directly to `main`.
 - **`.env` files can't be read by Claude** (the `settings.json` deny list). Check DB and app config with `php artisan about` or the Boost `database-connections` / `application-info` tools instead.
 
@@ -75,19 +76,20 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 
 1. Check with `php artisan about` (or Boost `database-connections`) that the default connection is SQLite. Do not read `.env`. Create `database/database.sqlite` if missing and run `php artisan migrate`.
 2. `tests/Pest.php`: enable `RefreshDatabase` for `Feature`. Delete the placeholder `ExampleTest`s.
-3. Add auth routes with the `api-endpoint` skill: register, login, logout, user. Replace the `/user` closure with a controller action. Put `throttle:10,1` on register and login.
+3. Add auth routes with the `api-endpoint` skill: register, login, logout, user. Replace the `/user` closure with a controller action. Throttle with named limiters in `AppServiceProvider`: `register` (10/min per IP) and `login` (10/min per IP + email, 30/min per IP).
 4. `AuthController` (register, login, logout, show current user). Keep it thin. Login failure throws `ValidationException` on `email`. Logout calls `$request->user()->currentAccessToken()->delete()`.
 5. `RegisterRequest` (name, email unique, password confirmed with `Password::defaults()`) and `LoginRequest`.
 6. `UserResource` (id, name, email). Auth responses use `UserResource::make($user)->additional(['token' => ...])`.
 
-**Files:** `routes/api.php`, `app/Http/Controllers/AuthController.php`, `app/Http/Requests/{Register,Login}Request.php`, `app/Http/Resources/UserResource.php`, `tests/Pest.php`
+**Files:** `routes/api.php`, `app/Http/Controllers/AuthController.php`, `app/Http/Requests/{Register,Login}Request.php`, `app/Http/Resources/UserResource.php`, `app/Providers/AppServiceProvider.php`, `app/Support/EmailNormalizer.php`, `config/sanctum.php`, `routes/console.php`, `tests/Pest.php`, `tests/Unit/.gitkeep`
 
 **Tests:** `tests/Feature/Auth/`
 
 - `RegisterTest`: returns 201 with a token; rejects a duplicate email (422); rejects a missing or unconfirmed password (422).
 - `LoginTest`: returns a token for valid credentials; rejects a wrong password (422 on `email`).
 - `LogoutTest`: revokes the current token; guest → 401. **Use a real token:** create it with `$user->createToken('test')->plainTextToken` and send it with `withToken()`. `actingAs($user, 'sanctum')` leaves `currentAccessToken()` null, so `->delete()` throws a 500. `Sanctum::actingAs()` uses a mock token, so a deletion check would prove nothing. Assert that the `personal_access_tokens` row is gone. Then call `$this->app['auth']->forgetGuards()` and assert that the same token now gets 401.
-- `CurrentUserTest`: returns the authenticated user; guest → 401.
+- `CurrentUserTest`: returns the authenticated user; guest → 401; an expired token → 401.
+- Also covered in `LoginTest` and `RegisterTest`: login and register throttling (per email, per IP, and register not blocked by failed logins), and email casing and whitespace normalization.
 
 **Done when:** the auth tests pass through test-runner, Pint is clean, `php artisan route:list --path=api` shows the 4 routes, and a manual register → login → `GET /api/user` with the Bearer token works.
 
@@ -138,7 +140,7 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 
 **Files:** `config/streakly.php`, `app/Support/HabitCalendar.php`, `database/migrations/*_create_habit_completions_table.php`, `app/Models/HabitCompletion.php`, `app/Models/Habit.php`, `database/factories/HabitCompletionFactory.php`, `app/Services/StreakCalculator.php`, `app/Http/Resources/HabitResource.php`, `app/Http/Controllers/{Habit,HabitCompletion}Controller.php`, `routes/api.php`
 
-**Tests:** `tests/Unit/StreakCalculatorTest.php` (pure, no DB) and `tests/Feature/Habits/HabitCompletionTest.php`. See the edge-case table below.
+**Tests:** `tests/Unit/StreakCalculatorTest.php` (pure, no DB) and `tests/Feature/Habits/HabitCompletionTest.php`. See the edge-case table below. Delete `tests/Unit/.gitkeep` once the first unit test exists.
 
 **Done when:** the streak edge-case tests and the completion feature tests pass, and `GET /api/habits` shows a correct streak and today flag after marking.
 
@@ -209,7 +211,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 **Branch:** `docs/readme` · **Estimate:** ~1h
 
-- `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
+- `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a "Known limitations" note (`/api/register` reveals whether an email is taken; no trusted-proxy config, so behind a proxy the per-IP throttles share one bucket; token pruning needs `schedule:run` in production), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
 - Run the review loop before committing and pushing, like every phase.
 
 ---
