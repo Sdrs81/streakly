@@ -18,7 +18,7 @@ Follow in order:
 3. **Authorization**: add or update the Policy method in `app/Policies/` (`php artisan make:policy` if missing). In the controller, call `Gate::authorize()` or `$this->authorize()`.
 4. **Controller**: `app/Http/Controllers/`. Keep it thin. Business logic belongs in the model or a service class.
 5. **Output**: `php artisan make:resource {Model}Resource` → `app/Http/Resources/`. Always return a Resource or Resource collection.
-6. **Test**: `tests/Feature/{Model}{Action}Test.php` (Pest).
+6. **Test**: `tests/Feature/{Area}/{Model}{Action}Test.php` (Pest), with the area folder named in `docs/plan.md` (e.g. `Habits/HabitIndexTest.php`, `Auth/LoginTest.php`).
 7. **Run tests** with the `test-runner` subagent and report the result.
 
 ## Rules

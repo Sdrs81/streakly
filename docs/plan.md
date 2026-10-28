@@ -18,12 +18,12 @@ Streakly is a small habit tracker. It is a learning project for Claude Code work
 - **Git:** one branch and one PR per phase, branched from an up-to-date `main`. Never commit directly to `main`.
 - **`.env` files can't be read by Claude** (the `settings.json` deny list). Check DB and app config with `php artisan about` or the Boost `database-connections` / `application-info` tools instead.
 
-## Working rules applied in every phase
+## Working rules
+
+Process rules (the `api-endpoint` skill, the `test-runner` subagent, `finish-phase`) live in `CLAUDE.md`. Specific to this plan:
 
 - Before you write version-sensitive code, check current APIs: Laravel, Sanctum and Pest through Boost `search-docs`; Pinia 4, Vue Router 5, Tailwind 4 and Vitest through context7.
-- Add every backend endpoint through the `api-endpoint` skill.
-- Run all tests through the `test-runner` subagent, never directly.
-- At the end of each phase: tests green, `vendor/bin/pint --test` clean (backend), `npm run lint` and `npm run type-check` clean (frontend), app runnable, then run the review loop from `CLAUDE.md` (`review-pr`, `/code-review high`; fix bugs, security issues and broken conventions only). Then commit → push → open a short PR (what was built, what the review fixed) → merge.
+- A phase is done when its "Done when" holds, tests are green, Pint (backend) or lint and type-check (frontend) are clean and the app runs. Then use the `finish-phase` skill.
 
 ---
 
@@ -81,8 +81,6 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 5. `RegisterRequest` (name, email unique, password confirmed with `Password::defaults()`) and `LoginRequest`.
 6. `UserResource` (id, name, email). Auth responses use `UserResource::make($user)->additional(['token' => ...])`.
 
-**Files:** `routes/api.php`, `app/Http/Controllers/AuthController.php`, `app/Http/Requests/{Register,Login}Request.php`, `app/Http/Resources/UserResource.php`, `app/Providers/AppServiceProvider.php`, `app/Support/EmailNormalizer.php`, `config/sanctum.php`, `routes/console.php`, `tests/Pest.php`, `tests/Unit/.gitkeep`
-
 **Tests:** `tests/Feature/Auth/`
 
 - `RegisterTest`: returns 201 with a token; rejects a duplicate email (422); rejects a missing or unconfirmed password (422).
@@ -104,8 +102,6 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 3. `StoreHabitRequest` and `UpdateHabitRequest`: `name` required|string|max:100, `description` nullable|string|max:500. In `UpdateHabitRequest`, `authorize()` delegates to the policy, so another user gets 403 before any 422.
 4. `HabitResource` (id, name, description, created_at).
 5. `HabitController` with `Route::apiResource('habits', ...)` in the `auth:sanctum` group. Use `Gate::authorize()` for show and destroy. Index returns `$request->user()->habits()->oldest()` so the order is deterministic.
-
-**Files:** `database/migrations/*_create_habits_table.php`, `app/Models/Habit.php`, `app/Models/User.php`, `database/factories/HabitFactory.php`, `app/Policies/HabitPolicy.php`, `app/Http/Requests/{Store,Update}HabitRequest.php`, `app/Http/Resources/HabitResource.php`, `app/Http/Controllers/HabitController.php`, `routes/api.php`
 
 **Tests:** `tests/Feature/Habits/`: `HabitIndexTest`, `HabitStoreTest`, `HabitShowTest`, `HabitUpdateTest`, `HabitDeleteTest`. Each file covers the success case, guest → 401 and, where relevant, invalid payload → 422. **Authorization tests (required):**
 
@@ -133,12 +129,10 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 7. `HabitCompletionController` (through the `api-endpoint` skill), with `Gate::authorize('update', $habit)`:
    - `store`: `$habit->completions()->firstOrCreate(['completed_on' => HabitCalendar::today()->toDateString()])`.
    - `destroy`: `$habit->completions()->where('completed_on', <same string>)->delete()`.
-   - Both return a fresh `HabitResource`. There is no body to validate, so no FormRequest. Note this in the code review.
+   - Both return a fresh `HabitResource`. There is no body to validate, so no FormRequest. This is an intended exception, not a convention break.
 8. Routes: `PUT` and `DELETE /habits/{habit}/completions/today`.
 
 **Watch out for:** never add a `date` or `immutable_date` cast to `completed_on`, and never compare it against a Carbon object. Always use a `Y-m-d` string. Feature tests #11 and #14 run against the real SQLite DB and assert the stored value.
-
-**Files:** `config/streakly.php`, `app/Support/HabitCalendar.php`, `database/migrations/*_create_habit_completions_table.php`, `app/Models/HabitCompletion.php`, `app/Models/Habit.php`, `database/factories/HabitCompletionFactory.php`, `app/Services/StreakCalculator.php`, `app/Http/Resources/HabitResource.php`, `app/Http/Controllers/{Habit,HabitCompletion}Controller.php`, `routes/api.php`
 
 **Tests:** `tests/Unit/StreakCalculatorTest.php` (pure, no DB) and `tests/Feature/Habits/HabitCompletionTest.php`. See the edge-case table below. Delete `tests/Unit/.gitkeep` once the first unit test exists.
 
@@ -183,8 +177,6 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 7. Views: `LoginView.vue` and `RegisterView.vue`. Show field errors for 422, and a single generic message (e.g. "Something went wrong, please try again.") for any other failure (network, 5xx). `App.vue` gets a minimal header (app name + logout) and a `RouterView`. Style with Tailwind utility classes only.
 8. A placeholder `HabitsView.vue` for `/` (heading + "Your habits will appear here"), so this phase ends in a working state. Phase 5 replaces its content.
 
-**Files:** `src/lib/api.ts`, `src/lib/validationErrors.ts`, `src/types/api.ts`, `src/stores/auth.ts`, `src/router/index.ts`, `src/views/{Login,Register,Habits}View.vue`, `src/components/AppHeader.vue`, `src/App.vue`
-
 **Tests (Vitest, mocking `@/lib/api`):** `src/stores/__tests__/auth.spec.ts` (login stores the token and user; logout clears both; a token in `localStorage` is rehydrated), `src/router/__tests__/guards.spec.ts` (a guest is redirected from `/` to `/login`; a logged-in user is redirected away from `/login`), `src/lib/__tests__/validationErrors.spec.ts`.
 
 **Done when:** tests, lint and type-check pass. In the browser, register lands on `/`, a refresh keeps the session, and logout returns to `/login` and the old token gets 401.
@@ -201,8 +193,6 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 4. `HabitCard.vue`: name, description, streak badge, a "Done today" toggle button, and edit/delete actions. Delete asks with `window.confirm`.
 5. `HabitForm.vue`: reused for create and inline edit, and shows 422 field errors.
 
-**Files:** `src/stores/habits.ts`, `src/lib/formatDayCount.ts`, `src/views/HabitsView.vue`, `src/components/{HabitCard,HabitForm}.vue`, `src/router/index.ts`
-
 **Tests:** `src/stores/__tests__/habits.spec.ts` (the toggle calls the right verb and updates state; delete removes the habit from state; a failed request sets `errorMessage`), `src/components/__tests__/HabitCard.spec.ts` (renders the streak label; emits toggle), `src/lib/__tests__/formatDayCount.spec.ts`.
 
 **Done when:** all tests, lint and type-check pass, and the full flow works in the browser: register → create, edit and delete a habit → mark and unmark today → the streak updates → logout. A second user doesn't see the first user's habits.
@@ -212,7 +202,6 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 **Branch:** `docs/readme` · **Estimate:** ~1h
 
 - `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a "Known limitations" note (`/api/register` reveals whether an email is taken; no trusted-proxy config, so behind a proxy the per-IP throttles share one bucket; token pruning needs `schedule:run` in production), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
-- Run the review loop before the commit, like every phase.
 
 ---
 
@@ -220,7 +209,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 **Risks**
 
-- **The total estimate is tight.** The phase estimates add up to about 13h. Per-phase overhead (commit, PR, `review-pr` + `/code-review` loop, fixes, merge) adds about 15–20 min × 6 ≈ 1.5–2h, for roughly 15h in total. That is at the top of the 1.5-day budget. Expect to use the cut list, and decide at the end of Phase 3 whether to start cutting.
+- **The total estimate is tight.** The phase estimates add up to about 13h. Per-phase overhead (commit, PR, review loop, fixes, merge) adds about 15–20 min × 6 ≈ 1.5–2h, for roughly 15h in total. That is at the top of the 1.5-day budget. Expect to use the cut list, and decide at the end of Phase 3 whether to start cutting.
 - **Very new versions** (Laravel 13, Pest 5, Pinia 4, Vue Router 5, Vite 8, TS 6): APIs may differ from memory. _Mitigation:_ check Boost `search-docs` / context7 before writing code in each area.
 - **Date and timezone bugs:** a time part sneaking into `completed_on`, and the midnight boundary. _Mitigation:_ plain `Y-m-d` strings with no cast, a single `HabitCalendar::today()`, the pure calculator, and tests #8, #11 and #14.
 - **Frontend auth plumbing:** token persistence, the 401 interceptor, the circular import between the store and the API layer. _Mitigation:_ the `setAuthToken` / `onUnauthorized` design in Phase 4.
