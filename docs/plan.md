@@ -70,7 +70,7 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 
 ## Phase 1 — Backend foundation & auth
 
-**Branch:** `feat/backend-auth` · **Estimate:** ~2h
+**Branch:** `feat/backend-auth` · **Estimate:** ~2h · **Status:** done
 
 **Tasks**
 
@@ -80,6 +80,8 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 4. `AuthController` (register, login, logout, show current user). Keep it thin. Login failure throws `ValidationException` on `email`. Logout calls `$request->user()->currentAccessToken()->delete()`.
 5. `RegisterRequest` (name, email unique, password confirmed with `Password::defaults()`) and `LoginRequest`.
 6. `UserResource` (id, name, email). Auth responses use `UserResource::make($user)->additional(['token' => ...])`.
+
+**Files:** `routes/api.php`, `app/Http/Controllers/AuthController.php`, `app/Http/Requests/{Register,Login}Request.php`, `app/Http/Resources/UserResource.php`, `app/Providers/AppServiceProvider.php`, `app/Support/EmailNormalizer.php`, `config/sanctum.php`, `routes/console.php`, `tests/Pest.php`, `tests/Unit/.gitkeep`
 
 **Tests:** `tests/Feature/Auth/`
 
