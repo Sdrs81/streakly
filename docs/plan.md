@@ -22,7 +22,7 @@ Streakly is a small habit tracker. It is a learning project for Claude Code work
 - Before you write version-sensitive code, check current APIs: Laravel, Sanctum and Pest through Boost `search-docs`; Pinia 4, Vue Router 5, Tailwind 4 and Vitest through context7.
 - Add every backend endpoint through the `api-endpoint` skill.
 - Run all tests through the `test-runner` subagent, never directly.
-- At the end of each phase: tests green, `vendor/bin/pint --test` clean (backend), `npm run lint` and `npm run type-check` clean (frontend), app runnable, then commit → open PR → run the **`review-pr` skill** on the branch → fix its findings (re-run tests via test-runner if code changed) → merge. Every phase's "Done when" implicitly includes a clean `review-pr` pass.
+- At the end of each phase: tests green, `vendor/bin/pint --test` clean (backend), `npm run lint` and `npm run type-check` clean (frontend), app runnable, then run the **review loop** defined in `CLAUDE.md` Working Rules (`review-pr`, then `/code-review high`, fix and repeat until clean). Then commit → push → open PR → merge. The loop runs before every commit and push, not only once per phase. Every phase's "Done when" implicitly includes a clean review loop.
 
 ---
 
@@ -210,7 +210,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 **Branch:** `docs/readme` · **Estimate:** ~1h
 
 - `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
-- Run the `review-pr` skill on this branch before merging, like every phase.
+- Run the review loop before committing and pushing, like every phase.
 
 ---
 
@@ -218,7 +218,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 **Risks**
 
-- **The total estimate is tight.** The phase estimates add up to about 13h. Per-phase overhead (commit, PR, `review-pr`, fixes, merge) adds about 15–20 min × 6 ≈ 1.5–2h, for roughly 15h in total. That is at the top of the 1.5-day budget. Expect to use the cut list, and decide at the end of Phase 3 whether to start cutting.
+- **The total estimate is tight.** The phase estimates add up to about 13h. Per-phase overhead (commit, PR, `review-pr` + `/code-review` loop, fixes, merge) adds about 15–20 min × 6 ≈ 1.5–2h, for roughly 15h in total. That is at the top of the 1.5-day budget. Expect to use the cut list, and decide at the end of Phase 3 whether to start cutting.
 - **Very new versions** (Laravel 13, Pest 5, Pinia 4, Vue Router 5, Vite 8, TS 6): APIs may differ from memory. _Mitigation:_ check Boost `search-docs` / context7 before writing code in each area.
 - **Date and timezone bugs:** a time part sneaking into `completed_on`, and the midnight boundary. _Mitigation:_ plain `Y-m-d` strings with no cast, a single `HabitCalendar::today()`, the pure calculator, and tests #8, #11 and #14.
 - **Frontend auth plumbing:** token persistence, the 401 interceptor, the circular import between the store and the API layer. _Mitigation:_ the `setAuthToken` / `onUnauthorized` design in Phase 4.

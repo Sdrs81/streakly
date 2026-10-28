@@ -12,7 +12,7 @@ Read-only: report findings, never edit files.
 
 ## Steps
 
-1. Run `git diff main...HEAD` and `git log main..HEAD --oneline` to see what changed.
+1. Run `git diff main...HEAD`, `git log main..HEAD --oneline` and `git diff HEAD` (uncommitted changes) to see what changed. Run `git status --short -uall` too and read every untracked (`??`) file, since neither diff shows new files.
 2. Check the diff against the Conventions in `CLAUDE.md`:
    - Backend: JSON API only, routes in `routes/api.php`, Sanctum Bearer tokens, authorization through Policies (no manual user checks in controllers), validation through FormRequests, output through API Resources.
    - Frontend: state in Pinia, HTTP only through the Axios instance in `src/lib/api.ts`.
