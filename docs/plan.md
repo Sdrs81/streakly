@@ -18,12 +18,12 @@ Streakly is a small habit tracker. It is a learning project for Claude Code work
 - **Git:** one branch and one PR per phase, branched from an up-to-date `main`. Never commit directly to `main`.
 - **`.env` files can't be read by Claude** (the `settings.json` deny list). Check DB and app config with `php artisan about` or the Boost `database-connections` / `application-info` tools instead.
 
-## Working rules applied in every phase
+## Working rules
+
+Process rules (the `api-endpoint` skill, the `test-runner` subagent, `finish-phase`) live in `CLAUDE.md`. Specific to this plan:
 
 - Before you write version-sensitive code, check current APIs: Laravel, Sanctum and Pest through Boost `search-docs`; Pinia 4, Vue Router 5, Tailwind 4 and Vitest through context7.
-- Add every backend endpoint through the `api-endpoint` skill.
-- Run all tests through the `test-runner` subagent, never directly.
-- At the end of each phase: tests green, `vendor/bin/pint --test` clean (backend), `npm run lint` and `npm run type-check` clean (frontend), app runnable, then run the review loop from `CLAUDE.md` (`review-pr`, `/code-review high`; fix bugs, security issues and broken conventions only). Then commit → push → open a short PR (what was built, what the review fixed) → merge.
+- A phase is done when its "Done when" holds, tests are green, Pint (backend) or lint and type-check (frontend) are clean and the app runs. Then use the `finish-phase` skill.
 
 ---
 
@@ -70,7 +70,7 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 
 ## Phase 1 — Backend foundation & auth
 
-**Branch:** `feat/backend-auth` · **Estimate:** ~2h
+**Branch:** `feat/backend-auth` · **Estimate:** ~2h · **Status:** done
 
 **Tasks**
 
@@ -133,7 +133,7 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 7. `HabitCompletionController` (through the `api-endpoint` skill), with `Gate::authorize('update', $habit)`:
    - `store`: `$habit->completions()->firstOrCreate(['completed_on' => HabitCalendar::today()->toDateString()])`.
    - `destroy`: `$habit->completions()->where('completed_on', <same string>)->delete()`.
-   - Both return a fresh `HabitResource`. There is no body to validate, so no FormRequest. Note this in the code review.
+   - Both return a fresh `HabitResource`. There is no body to validate, so no FormRequest. This is an intended exception, not a convention break.
 8. Routes: `PUT` and `DELETE /habits/{habit}/completions/today`.
 
 **Watch out for:** never add a `date` or `immutable_date` cast to `completed_on`, and never compare it against a Carbon object. Always use a `Y-m-d` string. Feature tests #11 and #14 run against the real SQLite DB and assert the stored value.
@@ -212,7 +212,6 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 **Branch:** `docs/readme` · **Estimate:** ~1h
 
 - `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a "Known limitations" note (`/api/register` reveals whether an email is taken; no trusted-proxy config, so behind a proxy the per-IP throttles share one bucket; token pruning needs `schedule:run` in production), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
-- Run the review loop before the commit, like every phase.
 
 ---
 
@@ -220,7 +219,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 **Risks**
 
-- **The total estimate is tight.** The phase estimates add up to about 13h. Per-phase overhead (commit, PR, `review-pr` + `/code-review` loop, fixes, merge) adds about 15–20 min × 6 ≈ 1.5–2h, for roughly 15h in total. That is at the top of the 1.5-day budget. Expect to use the cut list, and decide at the end of Phase 3 whether to start cutting.
+- **The total estimate is tight.** The phase estimates add up to about 13h. Per-phase overhead (commit, PR, review loop, fixes, merge) adds about 15–20 min × 6 ≈ 1.5–2h, for roughly 15h in total. That is at the top of the 1.5-day budget. Expect to use the cut list, and decide at the end of Phase 3 whether to start cutting.
 - **Very new versions** (Laravel 13, Pest 5, Pinia 4, Vue Router 5, Vite 8, TS 6): APIs may differ from memory. _Mitigation:_ check Boost `search-docs` / context7 before writing code in each area.
 - **Date and timezone bugs:** a time part sneaking into `completed_on`, and the midnight boundary. _Mitigation:_ plain `Y-m-d` strings with no cast, a single `HabitCalendar::today()`, the pure calculator, and tests #8, #11 and #14.
 - **Frontend auth plumbing:** token persistence, the 401 interceptor, the circular import between the store and the API layer. _Mitigation:_ the `setAuthToken` / `onUnauthorized` design in Phase 4.

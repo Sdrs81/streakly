@@ -32,7 +32,7 @@ Always authenticate with Sanctum Bearer tokens — never cookie- or session-base
 ## Conventions
 
 Always authorize with Policies — never write manual user checks inside controllers.
-Always validate with FormRequest classes and shape output with API Resources.
+Always validate with FormRequest classes (an endpoint with no input needs none) and shape output with API Resources.
 Always keep frontend state in Pinia.
 Always send HTTP through the single Axios instance in `src/lib/api.ts`.
 
@@ -40,5 +40,5 @@ Always send HTTP through the single Axios instance in `src/lib/api.ts`.
 
 Always use the `api-endpoint` skill when adding a new backend endpoint.
 Always run tests through the `test-runner` subagent.
-When a phase is ready, before its commit and push, run `review-pr`, then `/code-review high` (never `max`/`ultra` unless asked). Fix only bugs, security issues and broken conventions; ignore everything else (style, refactors, nice-to-haves). After fixing, re-run the checks (tests via `test-runner`, Pint, lint, type-check) and both reviews, at most 3 rounds, then ask the user. When the loop is clean, commit, push and open a short PR that lists what was built and the bugs, security issues and convention breaks that were fixed.
+Before committing a finished phase, always use the `finish-phase` skill: it runs the checks and the review loop, then commits, pushes and opens a short PR.
 Never commit or push to `main`. The plan lives in `docs/plan.md`.

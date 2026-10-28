@@ -75,3 +75,14 @@ Written as Situation, Task, Action, Result.
 **Result** (observed in the session, not logged): the gate works on uncommitted and new files. The rule is now limited to bugs, security issues and broken conventions, with a 3-round cap and a short PR note instead of a long report.
 
 **Lesson:** run a new gate on its own first change, because that is when it fails silently. A recall-tuned reviewer never runs out of suggestions, so decide up front which kinds of finding are worth acting on.
+
+## Phase 1: what we learned
+
+- **Prose is a request, not a control.** `review-pr` was only in the plan, so it was skipped until the user reminded Claude. Rules that must hold belong in `CLAUDE.md`, and only a hook enforces them.
+- **Test a new gate on its first run.** `review-pr` saw an empty diff before the first commit. Running the rule on its own change exposed it.
+- **A recall-tuned reviewer never runs out of suggestions.** Limit it to bugs, security issues and broken conventions, with a round cap.
+- **A subagent for tests keeps context clean** and caught a real config bug (`tests/Unit` missing from git, so a fresh clone could not run Pest).
+- **Guardrails need tuning.** Blocking Claude from editing its own permissions and hooks was right. The guard hook also blocked a harmless `gh pr create --base main` chained after `git push`, because once a command contains `git push` it searches the whole command text for `main`.
+- **A procedure belongs in a skill, not in prose.** The review loop plus commit, push and PR is now the `finish-phase` skill, with one line in `CLAUDE.md`. This is still advisory: nothing enforces that the skill runs. A hook that blocks `gh pr create` until a review ran would, and we chose not to add one.
+- **Keep the plan about what, not how.** File lists and limiter values went stale and needed a sync PR. The plan now holds scope, decisions and "Done when"; process lives in `CLAUDE.md`.
+- **Windows trap:** a Python script without `encoding="utf-8"` truncated `plan.md` on a `→` character. Prefer the Edit tool for Markdown.
