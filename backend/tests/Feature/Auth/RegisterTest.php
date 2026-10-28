@@ -1,0 +1,42 @@
+<?php
+
+use App\Models\User;
+
+function validRegistrationPayload(array $overrides = []): array
+{
+    return array_merge([
+        'name' => 'Ada Lovelace',
+        'email' => 'ada@example.com',
+        'password' => 'correct-horse-battery',
+        'password_confirmation' => 'correct-horse-battery',
+    ], $overrides);
+}
+
+it('registers a user and returns a token', function () {
+    $response = $this->postJson('/api/register', validRegistrationPayload());
+
+    $response->assertCreated()
+        ->assertJsonStructure(['data' => ['id', 'name', 'email'], 'token'])
+        ->assertJsonPath('data.email', 'ada@example.com');
+    $this->assertDatabaseHas('users', ['email' => 'ada@example.com']);
+});
+
+it('rejects a duplicate email', function () {
+    User::factory()->create(['email' => 'ada@example.com']);
+
+    $this->postJson('/api/register', validRegistrationPayload())
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('email');
+});
+
+it('rejects a missing password', function () {
+    $this->postJson('/api/register', validRegistrationPayload(['password' => null, 'password_confirmation' => null]))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+});
+
+it('rejects an unconfirmed password', function () {
+    $this->postJson('/api/register', validRegistrationPayload(['password_confirmation' => 'something-else']))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('password');
+});
