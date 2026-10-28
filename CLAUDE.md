@@ -40,5 +40,5 @@ Always send HTTP through the single Axios instance in `src/lib/api.ts`.
 
 Always use the `api-endpoint` skill when adding a new backend endpoint.
 Always run tests through the `test-runner` subagent.
-Before every commit and push, automatically run `review-pr` (on the working-tree diff if changes are uncommitted), then `/code-review high` (never `max`/`ultra` unless asked). Critical or important means a bug, a security issue, or a broken convention above; anything else is minor and doesn't block. For each such finding, fix it, re-run the checks (tests via `test-runner`, plus Pint, lint, type-check), and run both reviews again. If still not clean after 3 rounds, stop and ask the user before committing. On push, skip the loop if nothing changed since the last clean pass.
+When a phase is ready, before its commit and push, run `review-pr`, then `/code-review high` (never `max`/`ultra` unless asked). Fix only bugs, security issues and broken conventions; ignore everything else (style, refactors, nice-to-haves). After fixing, re-run the checks (tests via `test-runner`, Pint, lint, type-check) and both reviews, at most 3 rounds, then ask the user. When the loop is clean, commit, push and open a short PR that lists what was built and the bugs, security issues and convention breaks that were fixed.
 Never commit or push to `main`. The plan lives in `docs/plan.md`.

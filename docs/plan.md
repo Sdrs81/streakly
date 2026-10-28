@@ -23,7 +23,7 @@ Streakly is a small habit tracker. It is a learning project for Claude Code work
 - Before you write version-sensitive code, check current APIs: Laravel, Sanctum and Pest through Boost `search-docs`; Pinia 4, Vue Router 5, Tailwind 4 and Vitest through context7.
 - Add every backend endpoint through the `api-endpoint` skill.
 - Run all tests through the `test-runner` subagent, never directly.
-- At the end of each phase: tests green, `vendor/bin/pint --test` clean (backend), `npm run lint` and `npm run type-check` clean (frontend), app runnable, then run the **review loop** defined in `CLAUDE.md` Working Rules (`review-pr`, then `/code-review high`, fix and repeat until clean). Then commit → push → open PR → merge. The loop runs before every commit and push, not only once per phase. Every phase's "Done when" implicitly includes a clean review loop.
+- At the end of each phase: tests green, `vendor/bin/pint --test` clean (backend), `npm run lint` and `npm run type-check` clean (frontend), app runnable, then run the review loop from `CLAUDE.md` (`review-pr`, `/code-review high`; fix bugs, security issues and broken conventions only). Then commit → push → open a short PR (what was built, what the review fixed) → merge.
 
 ---
 
@@ -212,7 +212,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 **Branch:** `docs/readme` · **Estimate:** ~1h
 
 - `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a "Known limitations" note (`/api/register` reveals whether an email is taken; no trusted-proxy config, so behind a proxy the per-IP throttles share one bucket; token pruning needs `schedule:run` in production), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
-- Run the review loop before committing and pushing, like every phase.
+- Run the review loop before the commit, like every phase.
 
 ---
 
