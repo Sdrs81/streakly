@@ -53,3 +53,13 @@ it('does not let failed logins block registration', function () {
         'password_confirmation' => 'correct-horse-battery',
     ])->assertCreated();
 });
+
+it('throttles password spraying across different emails from one IP', function () {
+    foreach (range(1, 30) as $attempt) {
+        $this->postJson('/api/login', ['email' => "victim{$attempt}@example.com", 'password' => 'wrong-password'])
+            ->assertUnprocessable();
+    }
+
+    $this->postJson('/api/login', ['email' => 'victim31@example.com', 'password' => 'wrong-password'])
+        ->assertTooManyRequests();
+});

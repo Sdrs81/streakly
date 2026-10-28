@@ -11,6 +11,8 @@ class AppServiceProvider extends ServiceProvider
 {
     private const AUTH_ATTEMPTS_PER_MINUTE = 10;
 
+    private const LOGIN_ATTEMPTS_PER_IP_PER_MINUTE = 30;
+
     /**
      * Register any application services.
      */
@@ -26,7 +28,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Separate buckets so failed logins never lock out registration (and vice versa).
         RateLimiter::for('register', fn (Request $request) => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip()));
-        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)
-            ->by($request->ip().'|'.mb_strtolower((string) $request->input('email'))));
+        // The per-IP cap stops one client from spraying a password across many emails.
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)
+                ->by($request->ip().'|'.mb_strtolower((string) $request->input('email'))),
+            Limit::perMinute(self::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE)->by($request->ip()),
+        ]);
     }
 }
