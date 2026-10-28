@@ -23,13 +23,16 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        if (! Auth::validate($request->validated())) {
+        $provider = Auth::getProvider();
+        $user = $provider->retrieveByCredentials($request->validated());
+
+        if (! $user || ! $provider->validateCredentials($user, $request->validated())) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
         }
 
-        return $this->authenticated(User::where('email', $request->validated('email'))->firstOrFail());
+        return $this->authenticated($user);
     }
 
     public function logout(Request $request): Response
