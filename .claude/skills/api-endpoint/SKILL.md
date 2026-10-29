@@ -13,6 +13,7 @@ All paths are relative to `backend/`.
 
 Follow in order:
 
+0. **Docs first**: before writing version-sensitive code (routes, migrations, Eloquent, Sanctum, Pest), look it up with Boost `search-docs`. Do not write it from memory.
 1. **Route**: `routes/api.php`. Protected endpoints go inside the `auth:sanctum` group. For resource-based endpoints, use `Route::apiResource` and rely on route model binding.
 2. **Validation**: `php artisan make:request {Action}{Model}Request` → `app/Http/Requests/`. If the request needs authorization, have `authorize()` delegate to the Policy; otherwise return `true`.
 3. **Authorization**: add or update the Policy method in `app/Policies/` (`php artisan make:policy` if missing). In the controller, call `Gate::authorize()` or `$this->authorize()`.
