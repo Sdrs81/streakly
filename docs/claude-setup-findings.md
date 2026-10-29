@@ -91,3 +91,16 @@ Written as Situation, Task, Action, Result.
 - **A procedure belongs in a skill, not in prose.** The review loop plus commit, push and PR is now the `finish-phase` skill, with one line in `CLAUDE.md`. This is still advisory: nothing enforces that the skill runs. A hook that blocks `gh pr create` until a review ran would, and we chose not to add one.
 - **Keep the plan about what, not how.** File lists and limiter values went stale and needed a sync PR. The plan now holds scope, decisions and "Done when"; process lives in `CLAUDE.md`.
 - **Windows trap:** a Python script without `encoding="utf-8"` truncated `plan.md` on a `→` character. Prefer the Edit tool for Markdown.
+- **For hooks, a list beats writing every case by hand, but a deny-list is not the safe kind.** A pattern list (block or allow) is easier to keep than one rule per command. A deny-list is still enumeration, though: the guard hook was bypassed with quotes, `$(...)` and line continuations. For a guard, prefer an allow-list (anything unknown is blocked) or fail closed on input the hook cannot parse. A deny-list is fine for low-stakes hooks such as formatting.
+
+## Phase 2: what we learned
+
+Found by asking Claude to audit its own use of `CLAUDE.md`, skills, agents, MCP, plugins and rules after the phase.
+
+- **A rule kept only in `plan.md` was skipped.** The plan said to check Laravel APIs with Boost `search-docs` before writing code, and Claude never called Boost or context7. The rule now lives in `CLAUDE.md` (Working Rules).
+- **A skill that asks "should I run?" wastes a turn.** After the phase was done, Claude asked whether to run `finish-phase`. The skill description now says to run it as soon as "Done when" holds. The approval gate stays where it was: before any commit, push or PR (step 6).
+- **A "repeat" step needs to say what repeats.** Round 2 of the loop ran only `code-review`, so the fixes were never seen by `review-pr`. Step 4 now says to rerun checks, `review-pr` and `code-review high`.
+- **"Done when" items that are not tests get skipped.** `route:list` and the two-user curl check were never run. Step 1 now runs `route:list` for backend phases with new routes and requires the manual check or a note in the summary that it was not run.
+- **A loaded rule is not a checked rule.** `clean-code.md` forbids magic numbers, yet the length limits (100, 500) were repeated in two requests and in the tests. They are now `Habit::NAME_MAX_LENGTH` and `Habit::DESCRIPTION_MAX_LENGTH`. The migration keeps its own literal, because a migration should not depend on a model constant that may change later.
+- **Plugin hooks are hard to verify from inside a session.** `security-guidance` runs through its own `sg-python.sh` wrapper, so the Microsoft Store `python3` alias on PATH does not block it (`python` is 3.13). No plugin message appeared in this session, which does not prove that it ran.
+- **A review round can mostly return noise.** Round 2 of `code-review high` returned seven findings and none was a bug or convention break. The triage rule worked; a clean first round is a reasonable point to stop.
