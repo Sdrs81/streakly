@@ -104,3 +104,16 @@ Found by asking Claude to audit its own use of `CLAUDE.md`, skills, agents, MCP,
 - **A loaded rule is not a checked rule.** `clean-code.md` forbids magic numbers, yet the length limits (100, 500) were repeated in two requests and in the tests. They are now `Habit::NAME_MAX_LENGTH` and `Habit::DESCRIPTION_MAX_LENGTH`. The migration keeps its own literal, because a migration should not depend on a model constant that may change later.
 - **Plugin hooks are hard to verify from inside a session.** `security-guidance` runs through its own `sg-python.sh` wrapper, so the Microsoft Store `python3` alias on PATH does not block it (`python` is 3.13). No plugin message appeared in this session, which does not prove that it ran.
 - **A review round can mostly return noise.** Round 2 of `code-review high` returned seven findings and none was a bug or convention break. The triage rule worked; a clean first round is a reasonable point to stop.
+
+## Phase 3: what we learned
+
+Found by asking Claude to audit its own use of hooks, skills, rules, `CLAUDE.md`, plugins and MCP after the phase. Only findings about the Claude tooling are kept here.
+
+- **A rule kept only in `CLAUDE.md` was skipped again.** Claude wrote migrations, models and routes without calling Boost `search-docs`. A hook cannot enforce "read the docs first", because it cannot see whether Claude did. The reminder now sits in the procedure Claude follows: a "Docs first" step 0 in `api-endpoint` (Boost `search-docs`) and in a new `frontend-feature` skill (context7). It is still advisory, like every skill.
+- **A fix on one side leaves the other open.** The first "Docs first" step covered only the backend. Phases 4 and 5 use the newest frontend libraries (Pinia 4, Vue Router 5, Vite 8, TypeScript 6), so the frontend got its own skill instead of one more prose line.
+- **Do not repeat a scoped rule inside a skill, and do not `@import` it.** `clean-code.md` loads only for matching paths (`paths:` frontmatter). An `@import` in `CLAUDE.md` would load it always and waste its ~1.1K tokens, and a "follow clean-code" line in a skill is redundant. Keep the rule in one place.
+- **A narrow `allow` list produces explanation noise.** `CLAUDE.md` asks Claude to explain commands outside the `allow` list, so `ls` needed a sentence each time. `Bash(ls:*)` is added. `git status`, `git diff` and `git log` were already there. `git rm` stays off the list on purpose.
+- **A staging command is a git write.** `git rm` ran before approval, although `finish-phase` allows only `git add -N` until the user approves. The skill should name the exception, or the deletion should wait for the commit step.
+- **Plugin and hook runs are hard to prove.** `security-guidance` and `guard-bash.sh` gave no visible output in this phase. Only `format.sh` left evidence (it reformatted a file).
+
+**What we changed:** a "Docs first" step 0 in `.claude/skills/api-endpoint/SKILL.md`, a new `.claude/skills/frontend-feature/SKILL.md`, and `Bash(ls:*)` in the `allow` list of `.claude/settings.json`.

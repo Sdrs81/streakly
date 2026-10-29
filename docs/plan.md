@@ -117,7 +117,7 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 
 ## Phase 3 — Daily completion & streak
 
-**Branch:** `feat/habit-streaks` · **Estimate:** ~2–2.5h
+**Branch:** `feat/habit-streaks` · **Estimate:** ~2–2.5h · **Status:** done
 
 **Tasks**
 

@@ -15,7 +15,13 @@ class HabitController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        return HabitResource::collection($request->user()->habits()->oldest()->oldest('id')->get());
+        return HabitResource::collection(
+            $request->user()->habits()
+                ->with('completions:id,habit_id,completed_on')
+                ->oldest()
+                ->oldest('id')
+                ->get()
+        );
     }
 
     public function store(StoreHabitRequest $request): HabitResource
