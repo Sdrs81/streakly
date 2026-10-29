@@ -59,8 +59,10 @@ if matches "${git_cmd}(push|commit)([[:space:]]|\$)"; then
   branch=$(git -C "$CLAUDE_PROJECT_DIR" symbolic-ref --short HEAD 2>/dev/null)
 
   if matches "${git_cmd}push([[:space:]]|\$)"; then
+    # Only the push itself counts: "git push ... && gh pr create --base main" must pass.
+    push_args=$(printf '%s\n' "$cmd" | grep -Eio "${git_cmd}push[^;&|]*")
     # main as a refspec target: "git push origin main", "HEAD:main", "+main"
-    if [ "$branch" = "main" ] || matches '([[:space:]:+]|/)main([[:space:]]|$)'; then
+    if [ "$branch" = "main" ] || printf '%s\n' "$push_args" | grep -Eiq '([[:space:]:+]|/)main([[:space:]]|$)'; then
       block "push to main. Push a feature branch and open a PR instead"
     fi
     # --force or -f (including combined short flags like -uf); --force-with-lease is allowed
