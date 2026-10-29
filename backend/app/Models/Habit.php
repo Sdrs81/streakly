@@ -14,6 +14,10 @@ class Habit extends Model
     /** @use HasFactory<HabitFactory> */
     use HasFactory;
 
+    public const NAME_MAX_LENGTH = 100;
+
+    public const DESCRIPTION_MAX_LENGTH = 500;
+
     /**
      * @return BelongsTo<User, $this>
      */

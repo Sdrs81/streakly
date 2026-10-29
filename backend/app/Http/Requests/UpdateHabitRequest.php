@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Habit;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateHabitRequest extends FormRequest
@@ -21,8 +22,8 @@ class UpdateHabitRequest extends FormRequest
         $nameRequirement = $this->isMethod('PATCH') ? 'sometimes' : 'required';
 
         return [
-            'name' => [$nameRequirement, 'string', 'max:100'],
-            'description' => ['nullable', 'string', 'max:500'],
+            'name' => [$nameRequirement, 'string', 'max:'.Habit::NAME_MAX_LENGTH],
+            'description' => ['nullable', 'string', 'max:'.Habit::DESCRIPTION_MAX_LENGTH],
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Habit;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreHabitRequest extends FormRequest
@@ -17,8 +18,8 @@ class StoreHabitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100'],
-            'description' => ['nullable', 'string', 'max:500'],
+            'name' => ['required', 'string', 'max:'.Habit::NAME_MAX_LENGTH],
+            'description' => ['nullable', 'string', 'max:'.Habit::DESCRIPTION_MAX_LENGTH],
         ];
     }
 }

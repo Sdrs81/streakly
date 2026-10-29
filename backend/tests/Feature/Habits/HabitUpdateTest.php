@@ -54,8 +54,8 @@ it('rejects an invalid payload', function (array $payload, string $invalidField)
         ->assertJsonValidationErrors($invalidField);
 })->with([
     'missing name' => [[], 'name'],
-    'name too long' => [['name' => str_repeat('a', 101)], 'name'],
-    'description too long' => [['name' => 'Read', 'description' => str_repeat('a', 501)], 'description'],
+    'name too long' => [['name' => str_repeat('a', Habit::NAME_MAX_LENGTH + 1)], 'name'],
+    'description too long' => [['name' => 'Read', 'description' => str_repeat('a', Habit::DESCRIPTION_MAX_LENGTH + 1)], 'description'],
 ]);
 
 it('rejects guests', function () {
