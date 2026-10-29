@@ -95,7 +95,7 @@ The UI's "toggle" calls PUT or DELETE depending on `is_completed_today`. Idempot
 
 ## Phase 2 — Habit CRUD + authorization
 
-**Branch:** `feat/habit-crud` · **Estimate:** ~1.5–2h
+**Branch:** `feat/habit-crud` · **Estimate:** ~1.5–2h · **Status:** done
 
 **Tasks** (through the `api-endpoint` skill)
 
