@@ -61,6 +61,10 @@ if matches "${git_cmd}(push|commit)([[:space:]]|\$)"; then
   if matches "${git_cmd}push([[:space:]]|\$)"; then
     # Only the push itself counts: "git push ... && gh pr create --base main" must pass.
     push_args=$(printf '%s\n' "$cmd" | grep -Eio "${git_cmd}push[^;&|]*")
+    # Quotes, backticks, backslashes and command substitution can hide a refspec from the checks below, so refuse what cannot be analyzed.
+    if printf '%s\n' "$push_args" | grep -Fq -e '"' -e "'" -e '`' -e '\' -e '$('; then
+      block "push arguments with quotes, backticks, backslashes or command substitution cannot be checked. Write the push plainly"
+    fi
     # main as a refspec target: "git push origin main", "HEAD:main", "+main"
     if [ "$branch" = "main" ] || printf '%s\n' "$push_args" | grep -Eiq '([[:space:]:+]|/)main([[:space:]]|$)'; then
       block "push to main. Push a feature branch and open a PR instead"
