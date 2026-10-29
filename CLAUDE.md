@@ -40,5 +40,6 @@ Always send HTTP through the single Axios instance in `src/lib/api.ts`.
 
 Always use the `api-endpoint` skill when adding a new backend endpoint.
 Always run tests through the `test-runner` subagent.
+For any command outside the `allow` list and the `finish-phase` skill, say in one sentence what it does, why it is needed and whether it writes files. Do not run checks the user did not ask for; ask first.
 Before committing a finished phase, always use the `finish-phase` skill: it runs the checks and the review loop, then commits, pushes and opens a short PR.
 Never commit or push to `main`. The plan lives in `docs/plan.md`.

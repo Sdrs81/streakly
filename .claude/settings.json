@@ -3,6 +3,9 @@
     "allow": [
       "Bash(php artisan test:*)",
       "Bash(npm run lint:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(vendor/bin/pint --test)",
+      "Bash(backend/vendor/bin/pint --test)",
       "Bash(npm run test:unit:*)",
       "Bash(git status:*)",
       "Bash(git diff:*)",
@@ -19,9 +22,7 @@
       "Read(./**/*.pem)",
       "Read(./**/*credentials*)"
     ],
-    "ask": [
-      "Bash(git push:*)"
-    ]
+    "ask": ["Bash(git push:*)"]
   },
   "hooks": {
     "PreToolUse": [
