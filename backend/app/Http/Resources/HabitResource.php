@@ -21,6 +21,8 @@ class HabitResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'created_at' => $this->created_at,
+            'current_streak' => $this->currentStreak(),
+            'is_completed_today' => $this->isCompletedToday(),
         ];
     }
 }
