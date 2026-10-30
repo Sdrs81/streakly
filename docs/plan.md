@@ -191,7 +191,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 ## Phase 5 — Habit screens
 
-**Branch:** `feat/frontend-habits` · **Estimate:** ~2.5–3h
+**Branch:** `feat/frontend-habits` · **Estimate:** ~2.5–3h · **Status:** done
 
 **Tasks**
 
@@ -201,9 +201,9 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 4. `HabitCard.vue`: name, description, streak badge, a "Done today" toggle button, and edit/delete actions. Delete asks with `window.confirm`.
 5. `HabitForm.vue`: reused for create and inline edit, and shows 422 field errors.
 
-**Files:** `src/stores/habits.ts`, `src/lib/formatDayCount.ts`, `src/views/HabitsView.vue`, `src/components/{HabitCard,HabitForm}.vue`, `src/router/index.ts`
+**Files:** `src/stores/habits.ts`, `src/lib/formatDayCount.ts`, `src/types/api.ts`, `src/views/HabitsView.vue`, `src/components/{HabitCard,HabitForm}.vue`, `.claude/skills/browser-check/e2e-habits.mjs` (`src/router/index.ts` needed no change: the `habits` route already existed)
 
-**Tests:** `src/stores/__tests__/habits.spec.ts` (the toggle calls the right verb and updates state; delete removes the habit from state; a failed request sets `errorMessage`), `src/components/__tests__/HabitCard.spec.ts` (renders the streak label; emits toggle), `src/lib/__tests__/formatDayCount.spec.ts`.
+**Tests:** `src/stores/__tests__/habits.spec.ts` (the toggle calls the right verb and updates state; delete removes the habit from state; a failed request sets `errorMessage`; the store is cleared and late responses are ignored after the session ends), `src/components/__tests__/HabitCard.spec.ts` (renders the streak label; emits toggle), `src/components/__tests__/HabitForm.spec.ts`, `src/lib/__tests__/formatDayCount.spec.ts`.
 
 **Done when:** all tests, lint and type-check pass, and the full flow works in the browser: register → create, edit and delete a habit → mark and unmark today → the streak updates → logout. A second user doesn't see the first user's habits.
 
