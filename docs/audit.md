@@ -63,4 +63,59 @@ The prompt was not run as written. Fixed:
 
 ## Round 2: end of project
 
-...
+Date: 2026-10-31 · Branch: `docs/audit-round-2`
+
+Same two tools, run read-only after the last phase. The Florian script was the fixed version from Round 1, project scope only. Scores are scaled to each dimension's maximum (for example D1 11/14 becomes 15.7/20), which reproduces the Round 1 total.
+
+### Summary
+
+| Tool          | Result                                                                           |
+| ------------- | -------------------------------------------------------------------------------- |
+| Florian audit | About 80/100 (Optimized), unchanged from Round 1                                 |
+| `/doctor`     | Healthy. One finding: Claude Code is 3 versions behind (2.1.311, latest 2.1.314) |
+
+| Dimension          | Score | Max | Key finding                                                           |
+| ------------------ | ----- | --- | --------------------------------------------------------------------- |
+| 1 Memory & Context | 15.7  | 20  | About 9.4K tokens fixed context. No global CLAUDE.md                  |
+| 2 Rules Hygiene    | 10    | 10  | `clean-code.md` has frontmatter and `paths`, 128 lines                |
+| 3 Skills Quality   | 7.5   | 10  | `effort` on all 6 skills, `allowed-tools` missing on 2                |
+| 4 Agents/Commands  | 10    | 10  | Frontmatter and description on all 7 files                            |
+| 5 Security         | 16.5  | 20  | `.env*`, `*.pem`, `*credentials*` denied, PreToolUse hook. No sandbox |
+| 6 MCP              | 8     | 10  | Boost and Context7, no DB MCP. Guide MCP not installed                |
+| 7 Workflow         | 2     | 10  | Only `/review-pr`. Deploy commands do not apply here                  |
+| 8 Freshness        | 10    | 10  | No deprecated model names, recent commits                             |
+
+No critical gaps. The points still missing are the Round 1 decisions (global CLAUDE.md, sandbox, Dimension 7) plus the audit skills that are not installed.
+
+### Findings and decisions
+
+| Finding                                                                 | Decision | Status                                                                   |
+| ----------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| `browser-check` and `phase` have no `allowed-tools`                     | Defer    | Not changed, both orchestrate many tools. Widen if prompts appear        |
+| No global CLAUDE.md, no sandbox                                         | Defer    | Same reasons as Round 1                                                  |
+| Dimension 7 deploy commands missing                                     | Disagree | Local SQLite app, no deploy flow                                         |
+| Guide MCP not installed                                                 | Disagree | Not needed for this project                                              |
+| Florian audit skills (`token-audit`, `eval-*`, `security-check`) absent | Disagree | Remote code, not installed. Fallback scoring used                        |
+| Claude Code 2.1.311, latest 2.1.314                                     | Defer    | `autoUpdates` is `false` by choice. Update manually with `claude update` |
+
+### `/doctor` results
+
+- Native install, matches `installMethod`. No leftover npm or `~/.claude/local` install.
+- All settings files, `.mcp.json`, agents and skill frontmatter parse and validate.
+- Resident context is small (about 1.9K tokens). Hooks (`guard-bash.sh`, `format.sh`) are local. No timing data, because silent hooks are not logged.
+- Usage window: 23 sessions, 26 to 31 October. All 6 project skills and `security-guidance` were used. `context7` was used (4 calls), `laravel-boost` was not.
+- 15 denied tool calls (12 `permission-rule`, 2 `automode-blocked`, 1 `user-rejected`). None was a read-only command worth an allow rule.
+- Subagents already use `haiku`. `/code-review` is a built-in skill and cannot be edited from the project.
+
+`/doctor` suggestions, all declined or left as is:
+
+| Suggestion                                                    | Decision | Reason                                                                |
+| ------------------------------------------------------------- | -------- | --------------------------------------------------------------------- |
+| Update with `claude update`                                   | Defer    | Optional, manual                                                      |
+| Disable `laravel-boost` in this project                       | Disagree | Zero token cost (deferred), and `CLAUDE.md` names it for Laravel docs |
+| Use `/code-review medium` instead of `high` in `finish-phase` | Disagree | The project is finished, no cost to save                              |
+| Auto mode as default                                          | Disagree | Declined in Round 1, still applies to every project                   |
+
+### Conclusion
+
+Both audits agree the setup is in good shape at the end of the project. The score did not move between rounds because the remaining gaps are deliberate. Nothing in `.claude/` or `settings.json` was changed in Round 2.
