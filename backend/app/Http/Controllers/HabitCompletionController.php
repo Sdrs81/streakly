@@ -14,7 +14,8 @@ class HabitCompletionController extends Controller
     {
         Gate::authorize('update', $habit);
 
-        $habit->completions()->firstOrCreate(['completed_on' => HabitCalendar::today()->toDateString()]);
+        // createOrFirst inserts first and falls back to a lookup, so two simultaneous requests can't hit the unique index.
+        $habit->completions()->createOrFirst(['completed_on' => HabitCalendar::today()->toDateString()]);
 
         return new HabitResource($habit->load('completions'));
     }
