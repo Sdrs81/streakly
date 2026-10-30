@@ -39,6 +39,8 @@ Always send HTTP through the single Axios instance in `src/lib/api.ts`.
 ## Working Rules
 
 Always use the `api-endpoint` skill when adding a new backend endpoint.
+Always use the `frontend-feature` skill when adding or changing frontend code (view, component, store, router, API call).
+Use the `browser-check` skill to run a frontend phase's "Done when" flow in real Chrome, and run it again after the last fix of the phase.
 Before writing version-sensitive code, check current docs first: Boost `search-docs` for Laravel, Sanctum and Pest; context7 for Pinia, Vue Router, Tailwind and Vitest.
 Always run tests through the `test-runner` subagent.
 For any command outside the `allow` list and the `finish-phase` skill, say in one sentence what it does, why it is needed and whether it writes files. Do not run checks the user did not ask for; ask first.

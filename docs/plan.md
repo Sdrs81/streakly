@@ -170,7 +170,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 ## Phase 4 — Frontend foundation & auth screens
 
-**Branch:** `feat/frontend-auth` · **Estimate:** ~2–2.5h
+**Branch:** `feat/frontend-auth` · **Estimate:** ~2–2.5h · **Status:** done
 
 **Tasks**
 
@@ -183,9 +183,9 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 7. Views: `LoginView.vue` and `RegisterView.vue`. Show field errors for 422, and a single generic message (e.g. "Something went wrong, please try again.") for any other failure (network, 5xx). `App.vue` gets a minimal header (app name + logout) and a `RouterView`. Style with Tailwind utility classes only.
 8. A placeholder `HabitsView.vue` for `/` (heading + "Your habits will appear here"), so this phase ends in a working state. Phase 5 replaces its content.
 
-**Files:** `src/lib/api.ts`, `src/lib/validationErrors.ts`, `src/types/api.ts`, `src/stores/auth.ts`, `src/router/index.ts`, `src/views/{Login,Register,Habits}View.vue`, `src/components/AppHeader.vue`, `src/App.vue`
+**Files:** `src/lib/api.ts`, `src/lib/validationErrors.ts`, `src/types/api.ts`, `src/stores/auth.ts`, `src/router/index.ts`, `src/main.ts` (wires the 401 handler to the store and router), `src/views/{Login,Register,Habits}View.vue`, `src/components/AppHeader.vue`, `src/App.vue`
 
-**Tests (Vitest, mocking `@/lib/api`):** `src/stores/__tests__/auth.spec.ts` (login stores the token and user; logout clears both; a token in `localStorage` is rehydrated), `src/router/__tests__/guards.spec.ts` (a guest is redirected from `/` to `/login`; a logged-in user is redirected away from `/login`), `src/lib/__tests__/validationErrors.spec.ts`.
+**Tests (Vitest, mocking `@/lib/api`):** `src/stores/__tests__/auth.spec.ts` (login stores the token and user; logout clears both; a token in `localStorage` is rehydrated), `src/router/__tests__/guards.spec.ts` (a guest is redirected from `/` to `/login`; a logged-in user is redirected away from `/login`; a stored token loads the user, and a rejected token redirects to login), `src/lib/__tests__/validationErrors.spec.ts`, `src/lib/__tests__/api.spec.ts` (bearer header, and the 401 handler only fires for the current token).
 
 **Done when:** tests, lint and type-check pass. In the browser, register lands on `/`, a refresh keeps the session, and logout returns to `/login` and the old token gets 401.
 
