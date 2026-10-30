@@ -155,3 +155,9 @@ Found by asking Claude to review its own use of hooks, skills, rules, MCP, plugi
 - **Allow-listing a script makes its arguments part of the attack surface.** Validate arguments in the script, and prefer allowing the exact no-argument form. The `settings.json` line `Bash(bash scripts/browser-check.sh:*)` is still the wide form, and Claude cannot change it.
 
 **What we changed:** `scripts/phase-check.sh` (pint, `route:list`, lint, type-check for the touched sides; no tests, those stay with `test-runner`), `scripts/browser-check.sh`, a new `.claude/skills/phase/` skill that runs a phase end to end and stops before the commit, updates to `finish-phase`, `browser-check` and `frontend-feature`, two lines in `CLAUDE.md`, and 15 `allow` entries in `.claude/settings.json` (paths under `frontend/src`, `backend/app`, `routes`, `database`, `tests`, plus the two scripts, `route:list`, `migrate:status` and `git add -N`).
+
+## After Phase 5: leftover files
+
+The cleanup PRs removed the starter boilerplate, but some files stayed: `backend/AGENTS.md` (the Laravel Boost stub that `boost:install` never replaced), the cache migration, unused config files and the `inspire` command. They are harmless, so they stay.
+
+**Where such a check belongs:** the "phase is done" definition in [plan.md](plan.md) plus one `finish-phase` step: delete the starter or stub files the phase replaced, or say why they stay. Not `clean-code.md`, because its `paths:` list never loads it for config or stubs. Setup leftovers like `AGENTS.md` belong to no phase, so they need one pass at the end of setup.
