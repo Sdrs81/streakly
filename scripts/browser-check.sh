@@ -3,6 +3,7 @@
 #
 # Usage: bash scripts/browser-check.sh [--migrate] [e2e-script.mjs ...]
 #   Default scripts: every .claude/skills/browser-check/e2e-*.mjs
+#   Named scripts must match e2e-<name>.mjs and exist in that folder; anything else is refused.
 #   --migrate: run pending migrations on the dev SQLite database. Without it, pending
 #              migrations stop the check (a missing table would only show up as a 500).
 # Env: SCRATCH_DIR (where playwright-core and screenshots live, default: a temp dir),
@@ -19,10 +20,18 @@ scratch_dir="${SCRATCH_DIR:-$(mktemp -d)}"
 should_migrate=false
 scripts=()
 
+# Only known script names are accepted, so an argument can never point outside the skill folder.
 for argument in "$@"; do
   case "$argument" in
     --migrate) should_migrate=true ;;
-    *) scripts+=("$argument") ;;
+    *)
+      if [[ "$argument" =~ ^e2e-[A-Za-z0-9_-]+\.mjs$ ]] && [ -f "$skill_dir/$argument" ]; then
+        scripts+=("$argument")
+      else
+        echo "Unknown argument: $argument (expected --migrate or an existing e2e-*.mjs name)" >&2
+        exit 2
+      fi
+      ;;
   esac
 done
 
@@ -100,7 +109,7 @@ fi
 
 failed_count=0
 for script in "${scripts[@]}"; do
-  cp "$skill_dir/$script" "$scratch_dir/$script" || { echo "Unknown script: $script" >&2; exit 2; }
+  cp "$skill_dir/$script" "$scratch_dir/$script" || exit 2
   echo "== $script"
   if ! SHOTS_DIR="$scratch_dir" node "$script"; then
     failed_count=$((failed_count + 1))
