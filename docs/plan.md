@@ -209,7 +209,7 @@ Unit tests pass explicit `CarbonImmutable` dates with named variables (e.g. `$to
 
 ## Phase 6 — README & wrap-up (cuttable)
 
-**Branch:** `docs/readme` · **Estimate:** ~1h · **Status:** done (no screenshot yet)
+**Branch:** `docs/readme` · **Estimate:** ~1h · **Status:** done
 
 - `README.md`: what the app does, setup commands, the test commands, the API table, design decisions and trade-offs (Bearer tokens kept in `localStorage`, which is exposed to XSS but acceptable here; a single fixed habit timezone with UTC storage; idempotent completion endpoints; 403 rather than 404 for other users' habits), a "Known limitations" note (`/api/register` reveals whether an email is taken; no trusted-proxy config, so behind a proxy the per-IP throttles share one bucket; token pruning needs `schedule:run` in production), a screenshot, and a short "built with Claude Code" section (skills, subagent, hooks, MCP).
 
