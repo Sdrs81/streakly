@@ -4,6 +4,8 @@ A small habit tracker. Register, create habits, mark a habit done for today and 
 
 **Stack:** PHP 8.4 · Laravel 13 · Sanctum · SQLite · Pest — Vue 3 · TypeScript · Vite · Pinia · Vue Router · Tailwind CSS 4 · Axios · Vitest
 
+![Streakly habits screen with one habit marked done today](docs/screenshot.png)
+
 ## What it does
 
 - Register, log in and log out with Sanctum Bearer tokens.
