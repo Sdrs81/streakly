@@ -13,6 +13,11 @@ export interface Habit {
   is_completed_today: boolean
 }
 
+export interface HabitPayload {
+  name: string
+  description: string | null
+}
+
 export interface ResourceResponse<T> {
   data: T
 }

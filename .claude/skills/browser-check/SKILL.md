@@ -8,7 +8,11 @@ effort: medium
 
 `chromium-cli` is not available on this Windows machine. Drive the installed Chrome with `playwright-core` instead. It needs no browser download.
 
-## Steps
+## Fast path
+
+Run `bash scripts/browser-check.sh` from the repo root, with `SCRATCH_DIR` set to the scratchpad directory. It checks for pending migrations (stops with a message; re-run with `--migrate` to apply them to the dev database), starts both servers, installs `playwright-core` if needed, runs every `e2e-*.mjs` (or the scripts you name), then stops the servers and deletes the e2e users it created. It refuses to start when port 5173 or 8000 is already in use. Then do steps 4 and 6 below. Use the manual steps only when the script cannot run.
+
+## Manual steps
 
 1. **Servers.** Start both in the background, from the repo root. Neither writes project files:
    - `cd backend && php artisan serve --port=8000`
@@ -24,6 +28,7 @@ effort: medium
 
 ## Notes
 
-- Every run registers a user `e2e-<timestamp>@example.com` in the dev SQLite database. Mention it in the report; delete it only if the user asks.
+- Every run registers `e2e-…@example.com` users in the dev SQLite database. `scripts/browser-check.sh` deletes them again on exit; after a manual run, mention them in the report and delete them only if the user asks.
+- A missing table (a 500 with "no such table") means the dev database has pending migrations: run `php artisan migrate:status`.
 - `e2e-auth.mjs` covers the Phase 4 auth flow. For a later phase, add that phase's "Done when" steps to a new script next to it (for example `e2e-habits.mjs`) instead of changing the auth one.
 - Run this check again after the last code change of a phase, not only before the review loop. Review fixes can change behavior.

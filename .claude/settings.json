@@ -11,7 +11,21 @@
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(ls:*)",
-      "Edit(docs/plan.md)"
+      "Edit(docs/plan.md)",
+      "Bash(git add -N:*)",
+      "Bash(bash scripts/phase-check.sh:*)",
+      "Bash(bash scripts/browser-check.sh)",
+      "Bash(php artisan route:list:*)",
+      "Bash(php artisan migrate:status)",
+      "Edit(frontend/src/**)",
+      "Write(frontend/src/**)",
+      "Edit(backend/app/**)",
+      "Write(backend/app/**)",
+      "Edit(backend/routes/**)",
+      "Edit(backend/database/**)",
+      "Write(backend/database/**)",
+      "Edit(backend/tests/**)",
+      "Write(backend/tests/**)"
     ],
     "deny": [
       "Bash(git clean:*)",
