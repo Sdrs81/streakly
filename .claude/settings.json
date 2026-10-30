@@ -14,7 +14,7 @@
       "Edit(docs/plan.md)",
       "Bash(git add -N:*)",
       "Bash(bash scripts/phase-check.sh:*)",
-      "Bash(bash scripts/browser-check.sh:*)",
+      "Bash(bash scripts/browser-check.sh)",
       "Bash(php artisan route:list:*)",
       "Bash(php artisan migrate:status)",
       "Edit(frontend/src/**)",
