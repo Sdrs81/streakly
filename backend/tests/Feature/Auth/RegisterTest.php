@@ -49,6 +49,15 @@ it('rejects an email that only differs by casing', function () {
         ->assertJsonValidationErrors('email');
 });
 
+it('throttles repeated registrations from one IP', function () {
+    foreach (range(1, 10) as $attempt) {
+        $this->postJson('/api/register', validRegistrationPayload(['email' => "user{$attempt}@example.com"]))->assertCreated();
+    }
+
+    $this->postJson('/api/register', validRegistrationPayload(['email' => 'user11@example.com']))
+        ->assertTooManyRequests();
+});
+
 it('stores the email in lowercase', function () {
     $this->postJson('/api/register', validRegistrationPayload(['email' => 'Ada@Example.com']))->assertCreated();
 
