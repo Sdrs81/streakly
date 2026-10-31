@@ -3,16 +3,16 @@
 use App\Models\User;
 
 it('returns a token for valid credentials', function () {
-    $user = User::factory()->create(['password' => 'correct-horse-battery']);
+    $user = User::factory()->create(['password' => 'valid-password-123']);
 
-    $this->postJson('/api/login', ['email' => $user->email, 'password' => 'correct-horse-battery'])
+    $this->postJson('/api/login', ['email' => $user->email, 'password' => 'valid-password-123'])
         ->assertOk()
         ->assertJsonStructure(['data' => ['id', 'name', 'email'], 'token'])
         ->assertJsonPath('data.id', $user->id);
 });
 
 it('rejects a wrong password', function () {
-    $user = User::factory()->create(['password' => 'correct-horse-battery']);
+    $user = User::factory()->create(['password' => 'valid-password-123']);
 
     $this->postJson('/api/login', ['email' => $user->email, 'password' => 'wrong-password'])
         ->assertUnprocessable()
@@ -26,7 +26,7 @@ it('rejects a missing payload', function () {
 });
 
 it('rejects an unknown email', function () {
-    $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'correct-horse-battery'])
+    $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'valid-password-123'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('email');
 });
@@ -49,31 +49,31 @@ it('does not let failed logins block registration', function () {
     $this->postJson('/api/register', [
         'name' => 'Ada Lovelace',
         'email' => 'ada@example.com',
-        'password' => 'correct-horse-battery',
-        'password_confirmation' => 'correct-horse-battery',
+        'password' => 'valid-password-123',
+        'password_confirmation' => 'valid-password-123',
     ])->assertCreated();
 });
 
 it('throttles password spraying across different emails from one IP', function () {
     foreach (range(1, 30) as $attempt) {
-        $this->postJson('/api/login', ['email' => "victim{$attempt}@example.com", 'password' => 'wrong-password'])
+        $this->postJson('/api/login', ['email' => "user{$attempt}@example.com", 'password' => 'wrong-password'])
             ->assertUnprocessable();
     }
 
-    $this->postJson('/api/login', ['email' => 'victim31@example.com', 'password' => 'wrong-password'])
+    $this->postJson('/api/login', ['email' => 'blocked@example.com', 'password' => 'wrong-password'])
         ->assertTooManyRequests();
 });
 
 it('rejects a non-string email with a validation error', function () {
-    $this->postJson('/api/login', ['email' => ['nobody@example.com'], 'password' => 'correct-horse-battery'])
+    $this->postJson('/api/login', ['email' => ['nobody@example.com'], 'password' => 'valid-password-123'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('email');
 });
 
 it('logs in regardless of email casing', function () {
-    $user = User::factory()->create(['email' => 'ada@example.com', 'password' => 'correct-horse-battery']);
+    $user = User::factory()->create(['email' => 'ada@example.com', 'password' => 'valid-password-123']);
 
-    $this->postJson('/api/login', ['email' => ' Ada@Example.com ', 'password' => 'correct-horse-battery'])
+    $this->postJson('/api/login', ['email' => ' Ada@Example.com ', 'password' => 'valid-password-123'])
         ->assertOk()
         ->assertJsonPath('data.id', $user->id);
 });

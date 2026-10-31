@@ -161,3 +161,11 @@ Found by asking Claude to review its own use of hooks, skills, rules, MCP, plugi
 The cleanup PRs removed the starter boilerplate, but some files stayed: `backend/AGENTS.md` (the Laravel Boost stub that `boost:install` never replaced), the cache migration, unused config files and the `inspire` command. They are harmless, so they stay.
 
 **Where such a check belongs:** the "phase is done" definition in [plan.md](plan.md) plus one `finish-phase` step: delete the starter or stub files the phase replaced, or say why they stay. Not `clean-code.md`, because its `paths:` list never loads it for config or stubs. Setup leftovers like `AGENTS.md` belong to no phase, so they need one pass at the end of setup.
+
+## Test data that reads unprofessionally in a public repo
+
+Some fixture values Claude picked in the auth tests were harmless but unprofessional. The user found them; no check did, because `review-pr`, `code-review` and `clean-code.md` look at bugs and conventions, not at what fixtures say.
+
+**What to do:** use plain, neutral placeholders in tests (`user1@example.com`, `valid-password-123`), not memes, jokes or dramatic names.
+
+**Where it could be added:** one line in the `review-pr` skill ("flag fixture values and strings that read as jokes or memes"). It reads the diff before every commit, so it fits better than `clean-code.md`. Like every skill, it is advisory.

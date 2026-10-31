@@ -7,8 +7,8 @@ function validRegistrationPayload(array $overrides = []): array
     return array_merge([
         'name' => 'Ada Lovelace',
         'email' => 'ada@example.com',
-        'password' => 'correct-horse-battery',
-        'password_confirmation' => 'correct-horse-battery',
+        'password' => 'valid-password-123',
+        'password_confirmation' => 'valid-password-123',
     ], $overrides);
 }
 
